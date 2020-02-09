@@ -18,6 +18,7 @@ param(
 Import-Module PSDesiredStateConfiguration
 Import-DscResource -ModuleName xActiveDirectory
 Import-DscResource –ModuleName PSDesiredStateConfiguration
+Import-DscResource -ModuleName xNetworking
 
 
 Node $AllNodes.Where{$_.Role -eq "Primary DC"}.NodeName
@@ -28,6 +29,20 @@ Node $AllNodes.Where{$_.Role -eq "Primary DC"}.NodeName
             ConfigurationMode = 'ApplyOnly'
             RebootNodeIfNeeded = $true
         }
+
+        xIPAddress NewIPAddress
+        {
+            IPAddress      = "192.168.0.220/24"
+            InterfaceAlias = "Ethernet"
+            AddressFamily  = "IPV4"
+        }
+
+      xDefaultGatewayAddress DefaultGateway
+        {
+            Address = $Node.DefaultGateway
+            InterfaceAlias = $Node.InterfaceAlias
+            AddressFamily = "IPV4"
+         }
 
       File ADFiles
         {
