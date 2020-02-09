@@ -19,6 +19,7 @@
     Import-DscResource -ModuleName xActiveDirectory
     Import-DscResource –ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName xNetworking
+    Import-DscResource -ModuleName xdhcpserver
 
 
     Node $AllNodes.Where{ $_.Role -eq "Primary DC" }.NodeName
@@ -36,11 +37,40 @@
             AddressFamily  = "IPV4"
         }
 
-        xDefaultGatewayAddress DefaultGateway
-        {
+        xDefaultGatewayAddress DefaultGateway {
             Address        = $Node.DefaultGateway
             InterfaceAlias = $Node.InterfaceAlias
             AddressFamily  = "IPV4"
+        }
+        WindowsFeature DHCP {
+            DependsOn            = '[xIPAddress]NewIpAddress'
+            Name                 = 'DHCP'
+            Ensure               = 'PRESENT'
+            IncludeAllSubFeature = $true                                                                                                                              
+ 
+        }  
+        xDhcpServerScope Scope {
+            IPStartRange  = "192.168.0.223"
+            IPEndRange    = "192.168.0.227"
+            Name          = "TestScope1"
+            SubnetMask    = "255.255.255.240"
+            State         = "Active"            
+            Ensure        = "Present"
+            LeaseDuration = "7:00:00"
+            DependsOn     = "[WindowsFeature]DHCP"
+            
+        }
+ 
+        WindowsFeature DNS { 
+            Ensure = "Present" 
+            Name   = "DNS"
+        }
+
+        xDnsServerAddress DnsServerAddress { 
+            Address        = '127.0.0.1' 
+            InterfaceAlias = 'Ethernet'
+            AddressFamily  = 'IPv4'
+            DependsOn      = "[WindowsFeature]DNS"
         }
 
         File ADFiles {
