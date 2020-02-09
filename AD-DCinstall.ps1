@@ -3,30 +3,29 @@
 {
 
 
-param(
+    param(
 
     
 
-    [parameter(Mandatory=$true)]
-    [pscredential]$domainCred,
+        [parameter(Mandatory = $true)]
+        [pscredential]$domainCred,
 
-    [parameter(Mandatory=$true)]
-    [pscredential]$safemodeAdministratorCred
+        [parameter(Mandatory = $true)]
+        [pscredential]$safemodeAdministratorCred
 
-)
+    )
 
-Import-Module PSDesiredStateConfiguration
-Import-DscResource -ModuleName xActiveDirectory
-Import-DscResource –ModuleName PSDesiredStateConfiguration
-Import-DscResource -ModuleName xNetworking
+    Import-Module PSDesiredStateConfiguration
+    Import-DscResource -ModuleName xActiveDirectory
+    Import-DscResource –ModuleName PSDesiredStateConfiguration
+    Import-DscResource -ModuleName xNetworking
 
 
-Node $AllNodes.Where{$_.Role -eq "Primary DC"}.NodeName
+    Node $AllNodes.Where{ $_.Role -eq "Primary DC" }.NodeName
     {
-      LocalConfigurationManager
-        {
-            ActionAfterReboot = 'ContinueConfiguration'
-            ConfigurationMode = 'ApplyOnly'
+        LocalConfigurationManager {
+            ActionAfterReboot  = 'ContinueConfiguration'
+            ConfigurationMode  = 'ApplyOnly'
             RebootNodeIfNeeded = $true
         }
 
@@ -37,41 +36,38 @@ Node $AllNodes.Where{$_.Role -eq "Primary DC"}.NodeName
             AddressFamily  = "IPV4"
         }
 
-      xDefaultGatewayAddress DefaultGateway
+        xDefaultGatewayAddress DefaultGateway
         {
-            Address = $Node.DefaultGateway
+            Address        = $Node.DefaultGateway
             InterfaceAlias = $Node.InterfaceAlias
-            AddressFamily = "IPV4"
-         }
+            AddressFamily  = "IPV4"
+        }
 
-      File ADFiles
-        {
+        File ADFiles {
             DestinationPath = 'C:\NTDS'
-            Type = 'Directory'
-            Ensure = 'Present'
+            Type            = 'Directory'
+            Ensure          = 'Present'
         }
      
-      WindowsFeature ADDSInstall
-        {
+        WindowsFeature ADDSInstall {
             Ensure = "Present"
-            Name = "AD-Domain-Services"
+            Name   = "AD-Domain-Services"
         }
 
-      WindowsFeature ADDSTools
-        {
-            Ensure='Present'
-            Name = 'RSAT-ADDS'
+        WindowsFeature ADDSTools {
+            Ensure = 'Present'
+            Name   = 'RSAT-ADDS'
         }
 
-      xADDomain FirstDC
+        xADDomain FirstDC
         {
-            DomainName = "bvbamoos.local"
-            DomainNETBIOSName = "BVBAMOOS"
+            DomainName                    = "bvbamoos.local"
+            DomainNETBIOSName             = "BVBAMOOS"
             DomainAdministratorCredential = $domainCred
             SafemodeAdministratorPassword = $safemodeAdministratorCred
-            DatabasePath = 'C:\NTDS'         
-            LogPath = 'C:\NTDS' 
-            DependsOn = "[WindowsFeature]ADDSInstall"
+            DatabasePath                  = 'C:\NTDS'         
+            LogPath                       = 'C:\NTDS' 
+            DependsOn                     = "[WindowsFeature]ADDSInstall"
         }
 
     }#Node
@@ -83,14 +79,14 @@ Node $AllNodes.Where{$_.Role -eq "Primary DC"}.NodeName
 $ADConfig = @{
     AllNodes = @(
         @{
-            NodeName = "localhost"
-            Role = "Primary DC"
-            DomainName = "bvbamoos.local"
-            RetryCount = 20
-            RetryIntervalSec = 30
+            NodeName                    = "localhost"
+            Role                        = "Primary DC"
+            DomainName                  = "bvbamoos.local"
+            RetryCount                  = 20
+            RetryIntervalSec            = 30
             PsDscAllowPlainTextPassword = $true
-            PSDscAllowDomainUser = $true
-         }
+            PSDscAllowDomainUser        = $true
+        }
     )
 }
 
