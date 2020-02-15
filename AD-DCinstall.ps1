@@ -11,7 +11,10 @@
         [pscredential]$domainCred,
 
         [parameter(Mandatory = $true)]
-        [pscredential]$safemodeAdministratorCred    
+        [pscredential]$safemodeAdministratorCred,
+        
+        [parameter(Mandatory = $true)]
+        [pscredential]$passwordCred  
 
     
 
@@ -21,8 +24,9 @@
     Import-DscResource -ModuleName xActiveDirectory
     Import-DscResource –ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName xNetworking
-    Import-DscResource -Module xComputerManagement
+    Import-DscResource -ModuleName xComputerManagement
     Import-DscResource -ModuleName xdhcpserver
+    Import-DscResource -ModuleName xSmbShare 
 
 
     Node $AllNodes.Where{ $_.Role -eq "Primary DC" }.NodeName
@@ -87,7 +91,7 @@
             }
 
             @{
-                ScopeID       = "scope1"
+                ScopeID       = "192.168.0.0"
                 Name          = "scopeAD-DC"
                 IPStartRange  = "192.168.0.223"
                 IPEndRange    = "192.168.0.227"
@@ -96,6 +100,17 @@
                 State         = "Active"
                 AddressFamily = 'IPv4'
                 Ensure        = "Present"
+                DependsOn     = "[WindowsFeature]DHCP"
+            }
+
+            xDhcpServerOption ServerOpt
+            {
+                ScopeID            = "192.168.0.0"
+                DnsServerIPAddress = "192.168.0.220"
+                DnsDomain          = "bvbamoos.local"
+                AddressFamily      = "IPv4"            
+                Ensure             = "Present"
+               
             }
         }
 
@@ -168,6 +183,167 @@
             DependsOn = "[WindowsFeature]AD-Domain-Services"
         }
 
+        WindowsFeature IIS {
+            Ensure = 'Present'
+            Name   = 'Web-Server'
+        }
+
+        WindowsFeature IISConsole {
+            Ensure    = 'Present'
+            Name      = 'Web-Mgmt-Console'
+            DependsOn = '[WindowsFeature]IIS'
+        }
+
+        WindowsFeature IISScriptingTools {
+            Ensure    = 'Present'
+            Name      = 'Web-Scripting-Tools'
+            DependsOn = '[WindowsFeature]IIS'
+        }
+
+        File bvbamoosweb {
+            Ensure          = 'Present'
+            Type            = 'Directory'
+            DestinationPath = "C:\inetpub\wwwroot\"
+        }
+
+        File Indexfile {
+            Ensure          = 'Present'
+            Type            = 'file'
+            DestinationPath = "C:\inetpub\wwwroot\bvbamoosweb\"
+            Contents        = "<html>
+            <header><title>Welkom</title></header>
+                <body>
+                        Faycal Chabini Salutes you with some DSC shit
+                </body>
+            </html>"
+        }
+        User LocalAdmin {
+            UserName                 = "faycal"
+            FullName                 = "faycal chabini"
+            Ensure                   = 'Present'
+            Password                 = $passwordCred
+            Description              = 'User created by DSC'
+            PasswordNeverExpires     = $true
+            PasswordChangeNotAllowed = $true
+        }
+
+        Group Marketing {
+            GroupName = 'GRmarketing'
+            Ensure    = 'Present'
+            Members   = @( 'faycal' )
+        }
+
+        Group HR {
+            GroupName = 'GRHR'
+            Ensure    = 'Present'
+            Members   = @( 'faycal' )
+        }
+
+        Group Production {
+            GroupName = 'GRProduction'
+            Ensure    = 'Present'
+            Members   = @( 'faycal' )
+        }
+
+        Group Logistics {
+            GroupName = 'GRLogistics'
+            Ensure    = 'Present'
+            Members   = @( 'faycal' )
+        }
+
+        Group Research {
+            GroupName = 'GRResearch'
+            Ensure    = 'Present'
+            Members   = @( 'faycal' )
+        }
+
+
+
+        File Share {
+            Ensure          = "present"
+            DestinationPath = "c:\share"
+            Type            = "Directory"
+        }
+        
+        File Marketing {
+            Ensure          = "present"
+            DestinationPath = "c:\share\Marketing"
+            Type            = "Directory"
+            
+        }
+
+        File HR {
+            Ensure          = "present"
+            DestinationPath = "c:\share\HR"
+            Type            = "Directory"
+            
+        }
+
+        File Production {
+            Ensure          = "present"
+            DestinationPath = "c:\share\Production"
+            Type            = "Directory"
+            
+        }
+ 
+        File Logistics {
+            Ensure          = "present"
+            DestinationPath = "c:\share\Logistics"
+            Type            = "Directory"
+            
+        }
+
+        File Research {
+            Ensure          = "present"
+            DestinationPath = "c:\share\Research"
+            Type            = "Directory"
+            
+        }
+
+        xSmbShare Marketing 
+        { 
+            Ensure       = "Present"  
+            Name         = "marketing" 
+            Path         = "C:\share\Marketing"  
+            ChangeAccess = "GRmarketing"           
+            Description  = "This is an updated description for this share" 
+        } 
+
+        xSmbShare HR 
+        { 
+            Ensure       = "Present"  
+            Name         = "HR" 
+            Path         = "C:\share\HR"
+            ChangeAccess = "GRHR"     
+            Description  = "This is an updated description for this share" 
+        } 
+
+        xSmbShare Production
+        { 
+            Ensure       = "Present"  
+            Name         = "Production" 
+            Path         = "C:\share\Production"           
+            ChangeAccess = "GRproduction"  
+            Description  = "This is an updated description for this share" 
+        } 
+
+        xSmbShare Logistics 
+        { 
+            Ensure       = "Present"  
+            Name         = "Logistics" 
+            Path         = "C:\share\logistics"  
+            ChangeAccess = "GRlogistics"    
+            Description  = "This is an updated description for this share" 
+        } 
+        xSmbShare Research
+        { 
+            Ensure       = "Present"  
+            Name         = "Research" 
+            Path         = "C:\share\Research"  
+            ChangeAccess = "GRresearch"            
+            Description  = "This is an updated description for this share" 
+        } 
+
         xADDomain FirstDC
         {
             DomainName                    = "bvbamoos.local"
@@ -206,6 +382,9 @@ NewDomain -ConfigurationData $ADConfig `
         -Message "New Domain Safe Mode Administrator Password") `
     -domainCred (Get-Credential -UserName bvbamoos.local\administrator `
         -Message "New Domain Admin Credential") `
+    -passwordCred (Get-Credential -UserName '(faycal chabini)'  `
+        -Message "New Domain Admin Credential") `
+
    
   
     
