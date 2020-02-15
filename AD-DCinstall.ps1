@@ -200,22 +200,29 @@
             DependsOn = '[WindowsFeature]IIS'
         }
 
-        File bvbamoosweb {
-            Ensure          = 'Present'
-            Type            = 'Directory'
-            DestinationPath = "C:\inetpub\wwwroot\"
-        }
-
         File Indexfile {
             Ensure          = 'Present'
             Type            = 'file'
-            DestinationPath = "C:\inetpub\wwwroot\bvbamoosweb\"
+            DestinationPath = "C:\inetpub\wwwroot\index.html"
             Contents        = "<html>
             <header><title>Welkom</title></header>
                 <body>
                         Faycal Chabini Salutes you with some DSC shit
                 </body>
             </html>"
+        }
+
+        xFirewall IISinboundwebserviceshttpTCP
+        {
+            Name        = "IISinboundwebserviceshttpTCP"
+            Ensure      = "Present"
+            Direction   = "inbound"
+            Description = "allow HTTP traffic for Internet Information Services (IIS) [TCP 80]"
+            Profile     = "Domain"
+            Protocol    = "TCP"
+            LocalPort   = ("80")
+            Action      = "Allow"
+            Enabled     = "True"
         }
         User LocalAdmin {
             UserName                 = "faycal"
@@ -384,10 +391,6 @@ NewDomain -ConfigurationData $ADConfig `
         -Message "New Domain Admin Credential") `
     -passwordCred (Get-Credential -UserName '(faycal chabini)'  `
         -Message "New Domain Admin Credential") `
-
-   
-  
     
 
-
-Set-DscLocalConfigurationManager -Path .\NewDomain -Verbose -Force
+Set-DscLocalConfigurationManager -Path c:\NewDomain -Verbose -Force
