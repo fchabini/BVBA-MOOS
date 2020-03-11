@@ -44,7 +44,7 @@
             AddressFamily  = "IPV4"
            
         }
-     # setting up our DefaultGateway Addresse  
+    # setting up our DefaultGateway Addresse  
 
         xDefaultGatewayAddress DefaultGateway
         {
@@ -53,7 +53,7 @@
             AddressFamily  = "IPV4"
         }
 
-     # installing the DNS Feature, tools and the DNS server Addresse 
+    # installing the DNS Feature, tools and the DNS server Addresse 
 
          WindowsFeature DNS { 
             Ensure = "Present" 
@@ -75,7 +75,7 @@
             DependsOn = '[WindowsFeature]DNS'
         }
 
-     # installing the DHCP Feature, tools and the DHCP server Scope bvbaMoosscope
+    # installing the DHCP Feature, tools and the DHCP server Scope bvbaMoosscope
 
         WindowsFeature DHCP {
             DependsOn            = '[xIPAddress]NewIpAddress'
@@ -118,7 +118,7 @@
             DependsOn = "[xDhcpServerScope]Scope"
         }
 
-      # Authorizing our DHCP Scope 
+    # Authorizing our DHCP Scope 
 
         xDhcpServerAuthorization DhcpAuth
         {
@@ -126,7 +126,7 @@
             DependsOn = "[WindowsFeature]DHCP"
         }
       
-      # installing the Active directory Domain serverices, Rsat Dns Server
+    # installing the Active directory Domain serverices, Rsat Dns Server
         WindowsFeature AD-Domain-Services {
 
             Ensure    = "Present"
@@ -140,7 +140,7 @@
             DependsOn = "[WindowsFeature]DNS"
         }
 
-       # creating and setting up our Active Directory database directory 
+    # creating and setting up our Active Directory database directory 
 
         File ADFiles {
             DestinationPath = 'C:\NTDS'
@@ -148,7 +148,7 @@
             Ensure          = 'Present'
         }
 
-       # installing the Rsat tools for Active Directory 
+    # installing the Rsat tools for Active Directory 
 
         WindowsFeature RSAT-AD-Tools {
             Name      = 'RSAT-AD-Tools'
@@ -184,7 +184,7 @@
             Ensure    = 'Present'
             DependsOn = "[WindowsFeature]AD-Domain-Services"
         }
-       # Installing our webserver, Mgmt tools and scripting tools  
+    # Installing our webserver, Mgmt tools and scripting tools  
 
         WindowsFeature IIS {
             Ensure = 'Present'
@@ -203,7 +203,7 @@
             DependsOn = '[WindowsFeature]IIS'
         }
 
-       # creating an html index with a welcome message 
+    # creating an html index with a welcome message 
 
         File Indexfile {
             Ensure          = 'Present'
@@ -216,7 +216,7 @@
                 </body>
             </html>"
         }
-       # Adding a new Firewall rule that allows traffic to and from our webserver 
+    # Adding a new Firewall rule that allows traffic to and from our webserver 
 
         xFirewall IISinboundwebserviceshttpTCP
         {
@@ -230,7 +230,7 @@
             Action      = "Allow"
             Enabled     = "True"
         }
-       # Creating a local Admin user 
+    # Creating a local Admin user 
 
         User LocalAdmin {
             UserName                 = "faycal"
@@ -242,7 +242,7 @@
             PasswordChangeNotAllowed = $true
         }
 
-       # Creating all our groups and adding our user faycal as a member to all of them 
+    # Creating all our groups and adding our user faycal as a member to all of them 
 
         Group Marketing {
             GroupName = 'GRmarketing'
@@ -274,7 +274,7 @@
             Members   = @( 'faycal' )
         }
 
-      # Creating and sharing all our Shared folders for all the needed dpts # Adding all our previsouly created groups the membership of these shares 
+    # Creating and sharing all our Shared folders for all the needed dpts # Adding all our previsouly created groups the membership of these shares 
 
         File Share {
             Ensure          = "present"
@@ -317,7 +317,7 @@
             
         }
 
-       # Adding all our previsouly created groups the membership of these shares 
+    # Adding all our previsouly created groups the membership of these shares 
 
         xSmbShare Marketing 
         { 
@@ -364,7 +364,7 @@
         } 
         
 
-       # Adding our first domain  bvbamoos.local 
+    # Adding our first domain  bvbamoos.local 
 
         xADDomain FirstDC
         {
