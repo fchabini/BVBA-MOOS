@@ -34,11 +34,7 @@
 
     Node $AllNodes.NodeName
     {
-        LocalConfigurationManager {
-            ActionAfterReboot  = 'ContinueConfiguration'
-            ConfigurationMode  = 'ApplyOnly'
-            RebootNodeIfNeeded = $true
-        }
+        
     # setting static IP and Neetmask for IPV4 AddressFamilly 
 
         xIPAddress NewIPAddress
@@ -418,4 +414,4 @@ Set-DscLocalConfigurationManager -Path .\Newdomain -Verbose -Force
 
 # Starting the DscConfiguration 
  
-Start-DscConfiguration -Wait -Force -Verbose .\Newdomain 
+ Start-DscConfiguration -Wait -Force -Verbose .\Newdomain 
