@@ -418,4 +418,4 @@ Set-DscLocalConfigurationManager -Path .\Newdomain -Verbose -Force
 
 # Starting the DscConfiguration 
  
-# Start-DscConfiguration -Wait -Force -Verbose .\Newdomain 
+Start-DscConfiguration -Wait -Force -Verbose .\Newdomain 
