@@ -13,7 +13,6 @@ ConfigurationMode = 'ApplyAndAutoCorrect'
         }
     }
 }
-LCMBVBAMOOS
 
 LCMBVBAMOOS -outputpath "C:\Users\Administrator\NewDomain\Localhostconfig"
 Set-DscLocalConfigurationManager -Path "C:\Users\Administrator\NewDomain\Localhostconfig"

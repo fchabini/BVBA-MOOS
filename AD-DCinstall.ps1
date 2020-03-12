@@ -32,7 +32,7 @@
 
     # Configuration of our first primary server DC01
 
-    Node $AllNodes.DC01
+    Node $AllNodes.NodeName
     {
         
     # setting static IP and Neetmask for IPV4 AddressFamilly 
