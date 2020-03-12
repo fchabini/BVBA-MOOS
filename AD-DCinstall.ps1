@@ -32,47 +32,50 @@
 
     # Configuration of our first primary server DC01
 
-    Node $AllNodes.NodeName
+    Node $AllNodes.DC01
     {
         
-        # setting static IP and Neetmask for IPV4 AddressFamilly 
+    # setting static IP and Neetmask for IPV4 AddressFamilly 
 
-        xIPAddress NewIPAddress {
+        xIPAddress NewIPAddress
+        {
             IPAddress      = "192.168.2.220/24"
             InterfaceAlias = 'Ethernet'
             AddressFamily  = "IPV4"
            
         }
-        # setting up our DefaultGateway Addresse  
+     # setting up our DefaultGateway Addresse  
 
-        xDefaultGatewayAddress DefaultGateway {
+        xDefaultGatewayAddress DefaultGateway
+        {
             Address        = "192.168.2.1"
             InterfaceAlias = 'Ethernet'
             AddressFamily  = "IPV4"
         }
 
-        # installing the DNS Feature, tools and the DNS server Addresse 
+     # installing the DNS Feature, tools and the DNS server Addresse 
 
-        WindowsFeature DNS { 
+         WindowsFeature DNS { 
             Ensure = "Present" 
             Name   = "DNS"
            
         }
 
-        xDnsServerAddress DnsServerAddress { 
-            Address        = '127.0.0.1' , '192.168.2.220' 
+        xDnsServerAddress DnsServerAddress 
+        { 
+            Address        = '127.0.0.1' ,'192.168.2.220' 
             InterfaceAlias = 'Ethernet'
             AddressFamily  = 'IPv4'
             DependsOn      = "[WindowsFeature]DNS"
         }
 
         WindowsFeature DNSTools {
-            Ensure    = "Present"
-            Name      = 'RSAT-DNS-Server'
+            Ensure = "Present"
+            Name = 'RSAT-DNS-Server'
             DependsOn = '[WindowsFeature]DNS'
         }
 
-        # installing the DHCP Feature, tools and the DHCP server Scope bvbaMoosscope
+     # installing the DHCP Feature, tools and the DHCP server Scope bvbaMoosscope
 
         WindowsFeature DHCP {
             DependsOn            = '[xIPAddress]NewIpAddress'
@@ -83,44 +86,47 @@
         }
 
      
-        WindowsFeature DHCPTools {
-            Ensure    = "Present"
-            Name      = 'RSAT-DHCP'
+        WindowsFeature DHCPTools
+        {
+            Ensure = "Present"
+            Name = 'RSAT-DHCP'
             DependsOn = '[WindowsFeature]DHCP'
         }
 	
 
-        xDhcpServerScope Scope {
-            ScopeID       = "192.168.2.0"
-            IPStartRange  = "192.168.2.221"
-            IPEndRange    = "192.168.2.225"
-            Ensure        = "Present"
-            Name          = "BvbaMOOSscope"
-            SubnetMask    = "255.255.255.0"
-            State         = "Active"         
+        xDhcpServerScope Scope
+        {
+            ScopeID = "192.168.2.0"
+            IPStartRange = "192.168.2.221"
+            IPEndRange = "192.168.2.225"
+	    Ensure = "Present"
+            Name = "BvbaMOOSscope"
+            SubnetMask = "255.255.255.0"
+            State = "Active"         
             LeaseDuration = "8:00:00"
-            DependsOn     = "[WindowsFeature]DHCP"
+            DependsOn = "[WindowsFeature]DHCP"
         
         }
-        xDhcpServerOption ServerOpt {
-            ScopeID            = "192.168.2.0"
-            Router             = "192.168.2.1"
+        xDhcpServerOption ServerOpt
+        {
+            ScopeID = "192.168.2.0"
+            Router = "192.168.2.1"
             DnsServerIPAddress = "192.168.2.220"
-            DnsDomain          = "bvbvamoos.local"
-            AddressFamily      = "IPv4"            
-            Ensure             = "Present"
-            DependsOn          = "[xDhcpServerScope]Scope"
+            DnsDomain = "bvbvamoos.local"
+            AddressFamily = "IPv4"            
+            Ensure = "Present"
+            DependsOn = "[xDhcpServerScope]Scope"
         }
 
-        # Authorizing our DHCP Scope 
+      # Authorizing our DHCP Scope 
 
         xDhcpServerAuthorization DhcpAuth
         {
-            Ensure    = "Present"
+            Ensure = "Present"
             DependsOn = "[WindowsFeature]DHCP"
         }
       
-        # installing the Active directory Domain serverices, Rsat Dns Server
+      # installing the Active directory Domain serverices, Rsat Dns Server
         WindowsFeature AD-Domain-Services {
 
             Ensure    = "Present"
@@ -134,7 +140,7 @@
             DependsOn = "[WindowsFeature]DNS"
         }
 
-        # creating and setting up our Active Directory database directory 
+       # creating and setting up our Active Directory database directory 
 
         File ADFiles {
             DestinationPath = 'C:\NTDS'
@@ -142,7 +148,7 @@
             Ensure          = 'Present'
         }
 
-        # installing the Rsat tools for Active Directory 
+       # installing the Rsat tools for Active Directory 
 
         WindowsFeature RSAT-AD-Tools {
             Name      = 'RSAT-AD-Tools'
@@ -178,7 +184,7 @@
             Ensure    = 'Present'
             DependsOn = "[WindowsFeature]AD-Domain-Services"
         }
-        # Installing our webserver, Mgmt tools and scripting tools  
+       # Installing our webserver, Mgmt tools and scripting tools  
 
         WindowsFeature IIS {
             Ensure = 'Present'
@@ -197,7 +203,7 @@
             DependsOn = '[WindowsFeature]IIS'
         }
 
-        # creating an html index with a welcome message 
+       # creating an html index with a welcome message 
 
         File Indexfile {
             Ensure          = 'Present'
@@ -210,9 +216,10 @@
                 </body>
             </html>"
         }
-        # Adding a new Firewall rule that allows traffic to and from our webserver 
+       # Adding a new Firewall rule that allows traffic to and from our webserver 
 
-        xFirewall IISinboundwebserviceshttpTCP {
+        xFirewall IISinboundwebserviceshttpTCP
+        {
             Name        = "IISinboundwebserviceshttpTCP"
             Ensure      = "Present"
             Direction   = "inbound"
@@ -223,7 +230,7 @@
             Action      = "Allow"
             Enabled     = "True"
         }
-        # Creating a local Admin user 
+       # Creating a local Admin user 
 
         User LocalAdmin {
             UserName                 = "faycal"
@@ -235,7 +242,7 @@
             PasswordChangeNotAllowed = $true
         }
 
-        # Creating all our groups and adding our user faycal as a member to all of them 
+       # Creating all our groups and adding our user faycal as a member to all of them 
 
         Group Marketing {
             GroupName = 'GRmarketing'
@@ -267,7 +274,7 @@
             Members   = @( 'faycal' )
         }
 
-        # Creating and sharing all our Shared folders for all the needed dpts # Adding all our previsouly created groups the membership of these shares 
+      # Creating and sharing all our Shared folders for all the needed Dpts 
 
         File Share {
             Ensure          = "present"
@@ -310,9 +317,10 @@
             
         }
 
-        # Adding all our previsouly created groups the membership of these shares 
+       # Adding all our previsouly created groups the membership of these shares 
 
-        xSmbShare Marketing { 
+        xSmbShare Marketing 
+        { 
             Ensure       = "Present"  
             Name         = "Marketing" 
             Path         = "C:\share\Marketing"  
@@ -320,7 +328,8 @@
             Description  = "This is an updated description for this share" 
         } 
 
-        xSmbShare HR { 
+        xSmbShare HR 
+        { 
             Ensure       = "Present"  
             Name         = "HR" 
             Path         = "C:\share\HR"
@@ -328,7 +337,8 @@
             Description  = "This is an updated description for this share" 
         } 
 
-        xSmbShare Production { 
+        xSmbShare Production
+        { 
             Ensure       = "Present"  
             Name         = "Production" 
             Path         = "C:\share\Production"           
@@ -336,14 +346,16 @@
             Description  = "This is an updated description for this share" 
         } 
 
-        xSmbShare Logistics { 
+        xSmbShare Logistics 
+        { 
             Ensure       = "Present"  
             Name         = "Logistics" 
             Path         = "C:\share\logistics"  
             ChangeAccess = "GRlogistics"    
             Description  = "This is an updated description for this share" 
         } 
-        xSmbShare Research { 
+        xSmbShare Research
+        { 
             Ensure       = "Present"  
             Name         = "Research" 
             Path         = "C:\share\Research"  
@@ -352,9 +364,10 @@
         } 
         
 
-        # Adding our first domain  bvbamoos.local 
+       # Adding our first domain  bvbamoos.local 
 
-        xADDomain FirstDC {
+        xADDomain FirstDC
+        {
             DomainName                    = "bvbamoos.local"
             DomainNETBIOSName             = "BVBAMOOS"
             DomainAdministratorCredential = $domainCred
@@ -386,17 +399,16 @@ $ADConfig = @{
     )
 }
 
-# Creating and securing/incripting our usernames and passwords for our creds through Clixml
+# Creating our mof file and securing/incripting our usernames and passwords 
 
+NewDomain -ConfigurationData $ADConfig `
+    -safemodeAdministratorCred (Get-Credential -UserName '(Administrator)'  `
+        -Message "New Domain Safe Mode Administrator Password") `
+    -domainCred (Get-Credential -UserName bvbamoos.local\administrator `
+        -Message "New Domain Admin Credential") `
+    -passwordCred (Get-Credential -UserName '(faycal chabini)'  `
+        -Message "New Domain Admin Credential") `
 
-
-$safemodeAdministratorCred = Import-Clixml -path C:\creds\tenant.xml
-$domaincred = Import-Clixml -Path C:\creds\tenantdomain.xml
-$password = Import-Clixml -Path C:\creds\tenantuser.xml
-
-#creating our Mof file 
-
-Set-DscLocalConfigurationManager -Path .\Newdomain -Verbose -Force
 
 
 # Starting the DscConfiguration 
